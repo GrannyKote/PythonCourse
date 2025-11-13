@@ -15,7 +15,7 @@ class Appeal(BaseModel):
    birth_date: date
    phone_number: str 
    email: str
-   reason: str
+   reason: list[str]
    problem_date: datetime
 
    @field_validator("surname")
@@ -35,10 +35,11 @@ class Appeal(BaseModel):
         return value
         
    @field_validator("reason")
-   def check_reason(cls, value):
-        if value not in reasons:
-            raise ValueError("Недопустимая причина обращения")
-        return value
+   def check_reason(cls, values):
+        for value in values:
+            if value not in reasons:
+                raise ValueError("Недопустимая причина обращения")
+        return values
    
    @field_validator("birth_date")
    def check_birth_date(cls, value):
@@ -51,6 +52,14 @@ class Appeal(BaseModel):
    def check_email(cls, value):
         if "@" not in value:
             raise ValueError("Некорректный формат email")
+        return value
+   
+   @field_validator("phone_number")
+   def check_phone_number(cls, value):
+        if value[0] != "+":
+            raise ValueError("Некорректный формат номера")
+        if any(not item.isdigit() for item in value[1:]):
+            raise ValueError("Некорректный формат номера")
         return value
    
    @field_validator("problem_date")
